@@ -8,60 +8,77 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 
+
 /**
- * Configuration class for setting up security for the OAuth2 authorization server.
- * It defines two security filter chains: one for the authorization server endpoints and another for application-level security.
- * The authorization server filter chain is configured to handle requests to the authorization server endpoints, while the application filter chain secures all other requests to the application.
+ * Configuration class for setting up security in the OAuth2 authorization server.
+ * It defines two security filter chains:
+ * 1. The first filter chain (with order 1) is responsible for handling requests to the OAuth2 authorization server endpoints.
+ * 2. The second filter chain (with order 2) is responsible for handling other requests, including form login and access to well-known endpoints.
  */
 @Configuration
 public class SecurityConfig {
 
+
     /**
-     * Defines a bean for the SecurityFilterChain that handles security for the OAuth2 authorization server endpoints.
-     * This filter chain is responsible for securing the authorization server endpoints, such as token issuance and revocation.
-     * It uses the OAuth2AuthorizationServerConfigurer to configure the necessary security settings for the authorization server.
+     * Defines a bean for the SecurityFilterChain that handles requests to the OAuth2 authorization server endpoints.
+     * This filter chain is configured with the OAuth2AuthorizationServerConfigurer, which sets up the necessary security configurations for the authorization server.
+     * The securityMatcher is used to match requests to the authorization server endpoints, and the Customizer.withDefaults() method applies default configurations.
      * 
-     * @param http the HttpSecurity object used to configure security settings
-     * @return the configured SecurityFilterChain
-     * @throws Exception if an error occurs while configuring the security settings
+     * @param http The HttpSecurity object used to configure security settings.
+     * @return A SecurityFilterChain that handles requests to the OAuth2 authorization server endpoints.
+     * @throws Exception If an error occurs while configuring security settings.
      */
     @Bean
     @Order(1)
     SecurityFilterChain authorizationServerSecurityFilterChain(
             HttpSecurity http) throws Exception {
 
-        OAuth2AuthorizationServerConfigurer authorizationServerConfigurer = new OAuth2AuthorizationServerConfigurer();
+
+        OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
+                new OAuth2AuthorizationServerConfigurer();
+
 
         http
-                .securityMatcher(
-                        authorizationServerConfigurer.getEndpointsMatcher())
-                .with(
-                        authorizationServerConfigurer,
-                        Customizer.withDefaults());
+            .securityMatcher(
+                authorizationServerConfigurer.getEndpointsMatcher()
+            )
+            .with(
+                authorizationServerConfigurer,
+                Customizer.withDefaults()
+            );
+
 
         return http.build();
     }
 
+
     /**
-     * Defines a bean for the SecurityFilterChain that handles application-level security.
-     * This filter chain is responsible for securing all requests to the application, requiring authentication for any request.
-     * It also enables form-based login for user authentication.
+     * Defines a bean for the SecurityFilterChain that handles other requests, including form login and access to well-known endpoints.
+     * This filter chain is configured to permit access to the /.well-known/** and /oauth2/jwks endpoints, while requiring authentication for all other requests.
+     * The formLogin method is used to enable form-based login with default configurations.
      * 
-     * @param http the HttpSecurity object used to configure security settings
-     * @return the configured SecurityFilterChain
-     * @throws Exception if an error occurs while configuring the security settings
+     * @param http The HttpSecurity object used to configure security settings.
+     * @return A SecurityFilterChain that handles other requests, including form login and access to well-known endpoints.
+     * @throws Exception If an error occurs while configuring security settings.
      */
     @Bean
     @Order(2)
-    SecurityFilterChain applicationSecurityFilterChain(
+    SecurityFilterChain defaultSecurityFilterChain(
             HttpSecurity http) throws Exception {
 
+
         http
-                .authorizeHttpRequests(auth -> auth
-                        .anyRequest().authenticated())
-                .formLogin(Customizer.withDefaults());
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(
+                    "/.well-known/**",
+                    "/oauth2/jwks"
+                ).permitAll()
+
+                .anyRequest().authenticated()
+            )
+            .formLogin(Customizer.withDefaults());
+
 
         return http.build();
     }
-
 }

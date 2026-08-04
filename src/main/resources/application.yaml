@@ -8,3 +8,10 @@ spring:
 
 server:
   port: 9000
+
+logging:
+  level:
+    "[org.springframework.security]": DEBUG
+    "[org.springframework.security.oauth2]": DEBUG
+    "[org.springframework.security.oauth2.jwt]": DEBUG
+    "[org.springframework.web.client]": DEBUG

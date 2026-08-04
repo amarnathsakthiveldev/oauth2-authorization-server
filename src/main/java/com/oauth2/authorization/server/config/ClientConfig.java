@@ -1,5 +1,6 @@
 package com.oauth2.authorization.server.config;
 
+import java.time.Duration;
 import java.util.UUID;
 
 import org.springframework.context.annotation.Bean;
@@ -9,6 +10,7 @@ import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
+import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 
 
 /**
@@ -46,6 +48,12 @@ public class ClientConfig {
                         AuthorizationGrantType.CLIENT_CREDENTIALS)
 
                 .scope("api.read")
+                .scope("CUST-ONB")
+                .tokenSettings(
+                TokenSettings.builder()
+                    .accessTokenTimeToLive(Duration.ofMinutes(1))
+                    .build()
+            )
 
                 .build();
 
